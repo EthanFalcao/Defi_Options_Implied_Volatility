@@ -28,10 +28,13 @@ Options are financial derivatives that give the buyer the right, but not the obl
 11. **Continual Review and Update:** Regularly review the model to incorporate new market data and emerging trends in the crypto market.
 
 
+## Project Status
+Ongoing 
+
 
 ## Getting Started
 
 To get started with this project, you can clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/ethanfaclao/Optimizing-Options-Models-Crypto.git
+git clone https://github.com/ethanfalcao/Optimizing-Options-Models-Crypto.git
