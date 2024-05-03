@@ -12,6 +12,23 @@ Options are financial derivatives that give the buyer the right, but not the obl
 - `Data-Preprocessing.ipynb`: A Jupyter notebook for preprocessing the data to be used in the models.
 - `EDA.ipynb`: An exploratory data analysis notebook to investigate the datasets and glean insights.
 
+
+## Steps to Achieve the Objective:
+
+1. **Background Research:** Conduct comprehensive research on traditional options pricing models and the peculiarities of the crypto market.
+2. **Data Collection:** Gather historical data on cryptocurrency prices, volatility, trading volumes, and information on existing crypto options traded in the OTC market.
+3. **Model Adaptation:** Begin with the Black-Scholes model as a baseline and modify it to account for high volatility and unique risk factors associated with cryptocurrencies.
+4. **Incorporating Crypto-Specific Factors:** Include factors such as regulatory environment, technological changes, and market sentiment that significantly impact crypto markets.
+5. **Statistical Analysis and Model Testing:** Apply statistical methods to assess the accuracy and reliability of the adapted model through back-testing with historical data.
+6. **Optimization:** Refine the model based on testing results and employ advanced techniques like machine learning for dynamic adjustments.
+7. **Risk Management Integration:** Develop a framework for managing risks inherent in crypto options, such as counterparty risk, liquidity risk, and systemic risks.
+8. **Documentation and Reporting:** Document methodologies, assumptions, and findings. Prepare detailed reports and academic papers outlining the model's development and performance.
+9. **Compliance and Regulatory Review:** Ensure compliance with relevant financial regulations and standards, particularly those applicable to the crypto market.
+10. **Implementation and Real-Time Testing:** Implement the model in a real-world environment, monitor, and adjust it based on market feedback.
+11. **Continual Review and Update:** Regularly review the model to incorporate new market data and emerging trends in the crypto market.
+
+
+
 ## Getting Started
 
 To get started with this project, you can clone the repository to your local machine:
