@@ -17,6 +17,8 @@ Options are financial derivatives that give the buyer the right, but not the obl
 
 1. **Background Research:** Conduct comprehensive research on traditional options pricing models and the peculiarities of the crypto market.
 2. **Data Collection:** Gather historical data on cryptocurrency prices, volatility, trading volumes, and information on existing crypto options traded in the OTC market.
+
+Here rn: 
 3. **Model Adaptation:** Begin with the Black-Scholes model as a baseline and modify it to account for high volatility and unique risk factors associated with cryptocurrencies.
 4. **Incorporating Crypto-Specific Factors:** Include factors such as regulatory environment, technological changes, and market sentiment that significantly impact crypto markets.
 5. **Statistical Analysis and Model Testing:** Apply statistical methods to assess the accuracy and reliability of the adapted model through back-testing with historical data.
