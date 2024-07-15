@@ -21,7 +21,9 @@ Options are financial derivatives that give the buyer the right, but not the obl
 Here rn: 
 
 3. **Model Adaptation:** Begin with the Black-Scholes model as a baseline and modify it to account for high volatility and unique risk factors associated with cryptocurrencies.
-      -stochastic volatility, where the volatility itself is treated as a random process. We then implemented a
+   
+      -stochastic volatility, where the volatility itself is treated as a random process.
+   
        - Monte Carlo simulator
 5. **Incorporating Crypto-Specific Factors:** Include factors such as regulatory environment, technological changes, and market sentiment that significantly impact crypto markets.
 6. **Statistical Analysis and Model Testing:** Apply statistical methods to assess the accuracy and reliability of the adapted model through back-testing with historical data.
