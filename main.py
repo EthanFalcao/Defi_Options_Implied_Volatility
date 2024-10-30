@@ -30,8 +30,11 @@ def get_option_name_and_settlement(coin):
 
     return name, settlement_period
 
+import time  # Add import for time
+
 def fetch_option_data(option_name):
-    """Fetch the option data for a given option name."""
+    """Fetch the option data for a given option name with a small delay to avoid rate limiting."""
+    time.sleep(0.1)  # Add a short delay to avoid hitting rate limits
     r = requests.get(f'https://test.deribit.com/api/v2/public/get_order_book?instrument_name={option_name}')
     result = json.loads(r.text)
     return pd.json_normalize(result['result'])
