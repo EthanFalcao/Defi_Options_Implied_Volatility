@@ -5,6 +5,10 @@ import re
 from datetime import datetime
 from tqdm import tqdm
 import concurrent.futures
+import numpy as np
+from scipy.stats import norm
+import plotly.graph_objects as go
+from scipy.interpolate import griddata
 
 # Functions
 def get_option_name_and_settlement(coin):
@@ -47,7 +51,6 @@ def extract_details(instrument_name, coin):
     return None, None, None
 
 
-
 def get_option_data(coin, settlement_per):
     """
     :param coin: crypto-currency coin name ('BTC', 'ETH')
@@ -71,21 +74,20 @@ def get_option_data(coin, settlement_per):
             try:
                 data = future.result()
                 data['settlement_period'] = settlement_per
-                coin_df.append(data)
+                if not data.empty:  # Ensure non-empty data
+                    coin_df.append(data)
             except Exception as exc:
                 print(f'Error fetching data: {exc}')
             pbar.update(1)
 
     # Finalize DataFrame
     if len(coin_df) > 0:
-        coin_df = pd.concat(coin_df)
+        coin_df = pd.concat([df for df in coin_df if not df.empty])
 
     # Remove unnecessary columns
     columns = ['state', 'estimated_delivery_price']
     if not coin_df.empty:
         coin_df.drop(columns, inplace=True, axis=1)
-
-    #coin_df['Expiration Date'], coin_df['Strike Price'] = zip(*coin_df['instrument_name'].apply(lambda x: extract_details(x, coin)))
 
     coin_df['Expiration Date'], coin_df['Strike Price'], coin_df['Option Type'] = zip(*coin_df['instrument_name'].apply(lambda x: extract_details(x, coin)))
     
@@ -98,34 +100,19 @@ def get_option_data(coin, settlement_per):
 
     return coin_df
 
-data = get_option_data('BTC','day')
-data=data[["instrument_name", "Option Type", 
-           'mark_price', 'underlying_price', 'mark_iv', 
-           'greeks.vega', 'Expiration Date', 'Strike Price', 'Time to Expiration']]
+data = get_option_data('BTC','month')
+data = data[["instrument_name", "Option Type", 'mark_price', 'underlying_price', 'mark_iv', 'greeks.vega', 'Expiration Date', 'Strike Price', 'Time to Expiration']]
 
 data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
+btc_data = data.dropna()
 
-btc_data = data
-
-btc_data = btc_data.dropna()
-
-
-
-#Vega
-
-import numpy as np
-from scipy.stats import norm
-import plotly.graph_objects as go
-from scipy.interpolate import griddata
-
-# Define functions for the Black-Scholes model, Vega, and implied volatility calculation
-
-
-# Set the interest rate
+# Vega and Black-Scholes calculations
 interest_rate = 0.05
 
-# Define functions for Black-Scholes model, Vega, and implied volatility calculation
 def black_scholes_price(S, K, T, r, sigma, option_type="call"):
+    if sigma <= 0 or T <= 0:
+        return None  # Handle cases where sigma or T is zero or negative
+
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
     
@@ -139,6 +126,9 @@ def black_scholes_price(S, K, T, r, sigma, option_type="call"):
     return price
 
 def vega(S, K, T, r, sigma):
+    if sigma <= 0 or T <= 0:
+        return 0  # Handle cases where sigma or T is zero or negative
+
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     return S * norm.pdf(d1) * np.sqrt(T)
 
@@ -146,9 +136,12 @@ def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call"
     sigma = initial_vol
     for i in range(max_iterations):
         price = black_scholes_price(S, K, T, r, sigma, option_type)
+        if price is None:
+            return None
+        
         vega_value = vega(S, K, T, r, sigma)
         
-        if vega_value < 1e-5:
+        if vega_value < 1e-5:  # Check if Vega is too small
             break
         
         price_difference = market_price - price
@@ -159,18 +152,7 @@ def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call"
     
     return None
 
-'''
-# Define strike price filter limits (73% - 120% of spot price)
-min_strike_percent = 0.73
-max_strike_percent = 1.20
-
-# Filter data within the specified strike price range
-btc_data = btc_data[(btc_data['Strike Price'] >= btc_data['underlying_price'] * min_strike_percent) &
-                         (btc_data['Strike Price'] <= btc_data['underlying_price'] * max_strike_percent)]                         
-'''
-
-
-# Apply the implied volatility function to the data based on "Option Type"
+# Apply implied volatility calculation
 results = []
 for index, row in btc_data.iterrows():
     S = row['underlying_price']
@@ -188,12 +170,7 @@ for index, row in btc_data.iterrows():
 # Add the results to the DataFrame
 btc_data['Vega_implied_volatility'] = results
 
-
-
-#3d plot 
-
-
-# Define the columns needed from your data
+# 3D Plot of Implied Volatility
 strikes = btc_data['Strike Price'].values
 times_to_expiration = btc_data['Time to Expiration'].values
 implied_vols = btc_data['Vega_implied_volatility'].values
@@ -202,18 +179,13 @@ implied_vols = btc_data['Vega_implied_volatility'].values
 X, Y = np.meshgrid(np.unique(strikes), np.unique(times_to_expiration))
 
 # Interpolate the implied volatilities to fill the grid
-#Z = griddata((strikes, times_to_expiration), implied_vols, (X, Y), method='linear')
 Z = griddata((strikes, times_to_expiration), implied_vols, (X, Y), method='nearest')
-
 
 # Create the interactive 3D surface plot with color scale title
 fig = go.Figure(data=[go.Surface(
     z=Z, x=X, y=Y, colorscale='RdYlGn_r',  # Green-to-red color scale
     colorbar=dict(title="Implied Volatility %")
 )])
-
-
-
 
 fig.update_layout(
     scene=dict(
@@ -222,6 +194,5 @@ fig.update_layout(
         zaxis=dict(title='Implied Volatility %', range=[min(implied_vols), max(implied_vols)])
     )
 )
-
 
 fig.show()
