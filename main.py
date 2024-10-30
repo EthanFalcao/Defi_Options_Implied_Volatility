@@ -109,13 +109,21 @@ data = data[["instrument_name", "Option Type", 'mark_price', 'underlying_price',
 data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
 btc_data = data.dropna()
 
-# Vega and Black-Scholes calculations
+# implied Vol.  calculations
+
+import numpy as np
+from scipy.stats import norm
+
+# Define functions for the Black-Scholes model, Vega, and implied volatility calculation
+
+
+#adjust and set to any 
 interest_rate = 0.05
 
 def black_scholes_price(S, K, T, r, sigma, option_type="call"):
-    if sigma <= 0 or T <= 0:
-        return None  # Handle cases where sigma or T is zero or negative
-
+    """
+    Calculate Black-Scholes option price for call or put options.
+    """
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
     
@@ -129,33 +137,46 @@ def black_scholes_price(S, K, T, r, sigma, option_type="call"):
     return price
 
 def vega(S, K, T, r, sigma):
-    if sigma <= 0 or T <= 0:
-        return 0  # Handle cases where sigma or T is zero or negative
-
+    """
+    Calculate Vega, the sensitivity of the option price to changes in volatility.
+    """
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     return S * norm.pdf(d1) * np.sqrt(T)
 
 def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call", tolerance=1e-5, max_iterations=100):
+    """
+    Calculate implied volatility using the Newton-Raphson method.
+    """
     sigma = initial_vol
     for i in range(max_iterations):
         price = black_scholes_price(S, K, T, r, sigma, option_type)
-        if price is None:
-            return None
-        
         vega_value = vega(S, K, T, r, sigma)
         
-        if vega_value < 1e-5:  # Check if Vega is too small
+        # If vega is very small, avoid division by zero or insignificant changes
+        if vega_value < 1e-5:
             break
         
+        # Update sigma
         price_difference = market_price - price
         sigma += price_difference / vega_value
         
+        # Check for convergence
         if abs(price_difference) < tolerance:
             return sigma
     
+    # Return None if no convergence (indicating potential calculation issue)
     return None
 
-# Apply implied volatility calculation
+# Apply the strike price filter (73% - 120% of spot price)
+min_strike_percent = 0.73
+max_strike_percent = 1.20
+
+# Filter data within the specified strike price range
+filtered_data = btc_data[(btc_data['Strike Price'] >= btc_data['underlying_price'] * min_strike_percent) &
+                         (btc_data['Strike Price'] <= btc_data['underlying_price'] * max_strike_percent)]
+
+
+# Apply the implied volatility function to the data
 results = []
 for index, row in btc_data.iterrows():
     S = row['underlying_price']
@@ -164,16 +185,21 @@ for index, row in btc_data.iterrows():
     r = interest_rate
     market_price = row['mark_price']
     initial_vol = row['mark_iv'] / 100  # Assuming mark_iv is in percentage
-    option_type = row['Option Type'].lower()  # Use "call" or "put" based on the data
-    
+
     # Calculate implied volatility
-    iv = implied_volatility(market_price, S, K, T, r, initial_vol, option_type=option_type)
+    iv = implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call")
     results.append(iv)
 
 # Add the results to the DataFrame
 btc_data['Vega_implied_volatility'] = results
 
-# 3D Plot of Implied Volatility
+
+#surface plot 
+import plotly.graph_objects as go
+import numpy as np
+from scipy.interpolate import griddata
+
+# Define the columns needed from your data
 strikes = btc_data['Strike Price'].values
 times_to_expiration = btc_data['Time to Expiration'].values
 implied_vols = btc_data['Vega_implied_volatility'].values
@@ -182,20 +208,27 @@ implied_vols = btc_data['Vega_implied_volatility'].values
 X, Y = np.meshgrid(np.unique(strikes), np.unique(times_to_expiration))
 
 # Interpolate the implied volatilities to fill the grid
-Z = griddata((strikes, times_to_expiration), implied_vols, (X, Y), method='nearest')
+Z = griddata((strikes, times_to_expiration), implied_vols, (X, Y), method='linear')
 
 # Create the interactive 3D surface plot with color scale title
 fig = go.Figure(data=[go.Surface(
-    z=Z, x=X, y=Y, colorscale='RdYlGn_r',  # Green-to-red color scale
-    colorbar=dict(title="Implied Volatility %")
+    z=Z, x=X, y=Y, colorscale='RdYlGn_r',
+    colorbar=dict(title="I.V. %")  # Title for the color scale
 )])
 
 fig.update_layout(
+    title='Implied Volatility Surface (BSM Approach)',
+    autosize=False,
+    width=700,
+    height=700,
     scene=dict(
-        xaxis=dict(title='Strike Price', range=[strikes.min(), strikes.max()]),
-        yaxis=dict(title='Time to Expiry (Years)', range=[times_to_expiration.min(), times_to_expiration.max()]),
-        zaxis=dict(title='Implied Volatility %', range=[min(implied_vols), max(implied_vols)])
+        xaxis_title='Strike Price',
+        yaxis_title='Time to Expiry (Years)',
+        zaxis_title='Implied Volatility %',
+        xaxis=dict(type="log"),
+        aspectmode="cube"  # Ensures equal aspect ratio for x, y, and z
     )
 )
 
 fig.show()
+
