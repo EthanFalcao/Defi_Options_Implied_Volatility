@@ -122,6 +122,7 @@ def get_option_data(coin, settlement_per):
     
     return coin_df
 
+
 # Define Streamlit UI components
 st.sidebar.header("Parameters")
 coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
@@ -139,15 +140,23 @@ strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.
 st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
 
 # Black-Scholes Model and Vega Functions
+   
 def black_scholes_price(S, K, T, r, sigma, option_type="call"):
+    # Ensure T and sigma are non-negative
+    if T <= 0 or sigma <= 0:
+        return 0  # Or return None, depending on how you want to handle it
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
     if option_type == "call":
         return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
     else:
         return K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
-
+    
+    
 def vega(S, K, T, r, sigma):
+    # Ensure T and sigma are non-negative
+    if T <= 0 or sigma <= 0:
+        return 0  # Or return None
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     return S * norm.pdf(d1) * np.sqrt(T)
 
@@ -171,13 +180,17 @@ if data is None or data.empty:
     st.write("No data available.")
 else:
     st.write("Data fetched successfully.")
+    
+    # Ensure Strike Price is numeric
     data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
     btc_data = data.dropna()
 
+    # Apply strike price filter based on user input
     min_strike, max_strike = strike_range
     btc_data = btc_data[(btc_data['Strike Price'] >= btc_data['underlying_price'] * min_strike) & 
                         (btc_data['Strike Price'] <= btc_data['underlying_price'] * max_strike)]
     
+    # Calculate implied volatility for each option
     results = []
     for index, row in btc_data.iterrows():
         S, K, T = row['underlying_price'], row['Strike Price'], row['Time to Expiration']
@@ -186,6 +199,7 @@ else:
         results.append(iv)
     btc_data['Vega_implied_volatility'] = results
 
+    # Create surface plot for implied volatility
     strikes, times_to_expiration, implied_vols = btc_data['Strike Price'], btc_data['Time to Expiration'], btc_data['Vega_implied_volatility']
     X, Y = np.meshgrid(np.unique(strikes), np.unique(times_to_expiration))
     Z = griddata((strikes, times_to_expiration), implied_vols, (X, Y), method='linear')
@@ -197,6 +211,7 @@ else:
         scene=dict(xaxis_title='Strike Price', yaxis_title='Time to Expiry (Years)', zaxis_title='Implied Volatility %')
     )
     st.plotly_chart(fig)
+
 
 st.write("---")
 st.markdown("Created by Ethan Falcao | [LinkedIn](https://www.linkedin.com/in/ethan-falcao//)")
