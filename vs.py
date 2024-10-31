@@ -65,7 +65,7 @@ def extract_details(instrument_name, coin):
 
 def fetch_option_data(option_name, token):
     """Fetch the option data for a given option name with authentication."""
-    time.sleep(0.1)
+    time.sleep(0.3)
     headers = {"Authorization": f"Bearer {token}"}
     url = f'https://test.deribit.com/api/v2/public/get_order_book?instrument_name={option_name}'
     response = requests.get(url, headers=headers)
@@ -130,9 +130,11 @@ coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
 st.title(f"Defi Options - {coin}")
 st.title("Implied Volatility Surface")
 
+
 settlement_per = st.sidebar.selectbox(
     "Choose Settlement Period:",
-    ['day', 'week', 'month'],
+    ['day','week', 'month', ],
+    index=1, 
     help="Approximate execution times:\n- Month: 1.5 min\n- Week: 45 sec\n- Day: 15 sec"
 )
 interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
