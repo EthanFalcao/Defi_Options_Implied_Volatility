@@ -12,6 +12,7 @@ from scipy.stats import norm
 import plotly.graph_objects as go
 from scipy.interpolate import griddata
 import concurrent.futures
+from tqdm import tqdm
 
 # Define functions
 def black_scholes_price(S, K, T, r, sigma, option_type="call"):
@@ -60,10 +61,15 @@ def get_option_name_and_settlement(coin):
     return name, settlement_period 
 
 def fetch_option_data(option_name):
+    """Fetch the option data for a given option name with a small delay to avoid rate limiting, and select only specific columns."""
     time.sleep(0.1)  # Add a short delay to avoid hitting rate limits
-    r = requests.get(f'https://test.deribit.com/api/v2/public/get_order_book?instrument_name={option_name}', headers=headers)
+    r = requests.get(f'https://test.deribit.com/api/v2/public/get_order_book?instrument_name={option_name}')
     result = json.loads(r.text)
-    return pd.json_normalize(result['result'])
+    
+    # Normalize the JSON data and filter for required columns
+    df = pd.json_normalize(result['result'])
+    selected_columns = ["instrument_name", "mark_price", "underlying_price", "mark_iv", "greeks.vega"]
+    return df[selected_columns]
 
 def extract_details(instrument_name, coin):
     match = re.match(fr"{coin}-(\d+[A-Z]{{3}}\d+)-(\d+)-([CP])", instrument_name)
@@ -75,8 +81,14 @@ def extract_details(instrument_name, coin):
     return None, None, None
 
 def get_option_data(coin, settlement_per):
+    # Get option name and settlement
     coin_name, settlement_period = get_option_name_and_settlement(coin)
+    # Filter options that have the specified settlement period
     coin_name_filtered = [coin_name[i] for i in range(len(coin_name)) if settlement_period[i] == settlement_per]
+    # Initialize progress bar
+    pbar = tqdm(total=len(coin_name_filtered))
+
+    # Fetch data concurrently using ThreadPoolExecutor
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_option = {executor.submit(fetch_option_data, name): name for name in coin_name_filtered}
         coin_df = []
@@ -84,38 +96,52 @@ def get_option_data(coin, settlement_per):
             try:
                 data = future.result()
                 data['settlement_period'] = settlement_per
-                if not data.empty:
-                    coin_df.append(data)
+                coin_df.append(data)
             except Exception as exc:
                 print(f'Error fetching data: {exc}')
-    if coin_df:
-        coin_df = pd.concat([df for df in coin_df if not df.empty])
-    columns = ['state', 'estimated_delivery_price']
-    if not coin_df.empty:
-        coin_df.drop(columns, inplace=True, axis=1)
-    today = datetime.today()
+            pbar.update(1)
+
+    # Finalize DataFrame
+    if len(coin_df) > 0:
+        coin_df = pd.concat(coin_df)
+    # Extract expiration date, strike price, and option type
     coin_df['Expiration Date'], coin_df['Strike Price'], coin_df['Option Type'] = zip(*coin_df['instrument_name'].apply(lambda x: extract_details(x, coin)))
+    # Calculate time to expiration
+    today = datetime.today()
     coin_df['Time to Expiration'] = coin_df['Expiration Date'].apply(lambda x: (datetime.strptime(x, '%d%b%y') - today).days / 365 if x else None)
+    # Select the final columns
+    final_columns = ["instrument_name", "Option Type", 'mark_price', 'underlying_price', 'mark_iv', 'greeks.vega', 'Expiration Date', 'Strike Price', 'Time to Expiration']
+    coin_df = coin_df[final_columns]
+    coin_df.to_csv('data/data.csv', index=False)
+    pbar.close()
     return coin_df
 
+st.sidebar.header("Parameters")
+coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
+
 # Streamlit Interface
-st.title("Crypto Options: Implied Volatility Surface")
+st.title(f"Defi Options - {coin}")
+st.title("Implied Volatility Surface")
+
 
 # Sidebar inputs
-st.sidebar.header("Settings")
-coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
+
 # Add a note about expected data retrieval times
 #st.sidebar.markdown("**Settlement Period:**")
 settlement_per = st.sidebar.selectbox(
     "Choose Settlement Period:",
     ['day','week','month'],
-    help="Approximate data retrieval times:\n- Month: 1.5 min\n- Week: 45 sec\n- Day: 15 sec"
+    help="Approximate execution times:\n- Month: 1.5 min\n- Week: 45 sec\n- Day: 15 sec"
 )
-interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.05, step=0.001)
+interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.05, step=0.001,format="%.3f")
+
+
+
+
 strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.73, 1.20))
 
 # Display chosen settings under the title
-st.subheader(f"{coin}\n Settlement Period: {settlement_per.capitalize()}")
+st.subheader(f" Settlement Period: {settlement_per.capitalize()}")
 
 st.write("Fetching data...")
 
@@ -172,3 +198,9 @@ else:
         )
     )
     st.plotly_chart(fig)
+    
+    
+st.write("---")
+st.markdown(
+    "Created by Ethan Falcao  |   [LinkedIn](https://www.linkedin.com/in/ethan-falcao//)"
+)

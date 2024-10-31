@@ -33,11 +33,15 @@ def get_option_name_and_settlement(coin):
 import time  # Add import for time
 
 def fetch_option_data(option_name):
-    """Fetch the option data for a given option name with a small delay to avoid rate limiting."""
+    """Fetch the option data for a given option name with a small delay to avoid rate limiting, and select only specific columns."""
     time.sleep(0.1)  # Add a short delay to avoid hitting rate limits
     r = requests.get(f'https://test.deribit.com/api/v2/public/get_order_book?instrument_name={option_name}')
     result = json.loads(r.text)
-    return pd.json_normalize(result['result'])
+    
+    # Normalize the JSON data and filter for required columns
+    df = pd.json_normalize(result['result'])
+    selected_columns = ["instrument_name", "mark_price", "underlying_price", "mark_iv", "greeks.vega"]
+    return df[selected_columns]
 
 
 def extract_details(instrument_name, coin):
@@ -55,16 +59,10 @@ def extract_details(instrument_name, coin):
 
 
 def get_option_data(coin, settlement_per):
-    """
-    :param coin: crypto-currency coin name ('BTC', 'ETH')
-    :return: pandas DataFrame with all option data for a given coin, filtered for options with specified settlement.
-    """
     # Get option name and settlement
     coin_name, settlement_period = get_option_name_and_settlement(coin)
-
     # Filter options that have the specified settlement period
     coin_name_filtered = [coin_name[i] for i in range(len(coin_name)) if settlement_period[i] == settlement_per]
-
     # Initialize progress bar
     pbar = tqdm(total=len(coin_name_filtered))
 
@@ -72,35 +70,28 @@ def get_option_data(coin, settlement_per):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_option = {executor.submit(fetch_option_data, name): name for name in coin_name_filtered}
         coin_df = []
-        
         for future in concurrent.futures.as_completed(future_to_option):
             try:
                 data = future.result()
                 data['settlement_period'] = settlement_per
-                if not data.empty:  # Ensure non-empty data
-                    coin_df.append(data)
+                coin_df.append(data)
             except Exception as exc:
                 print(f'Error fetching data: {exc}')
             pbar.update(1)
 
     # Finalize DataFrame
     if len(coin_df) > 0:
-        coin_df = pd.concat([df for df in coin_df if not df.empty])
-
-    # Remove unnecessary columns
-    columns = ['state', 'estimated_delivery_price']
-    if not coin_df.empty:
-        coin_df.drop(columns, inplace=True, axis=1)
-
+        coin_df = pd.concat(coin_df)
+    # Extract expiration date, strike price, and option type
     coin_df['Expiration Date'], coin_df['Strike Price'], coin_df['Option Type'] = zip(*coin_df['instrument_name'].apply(lambda x: extract_details(x, coin)))
-    
+    # Calculate time to expiration
     today = datetime.today()
     coin_df['Time to Expiration'] = coin_df['Expiration Date'].apply(lambda x: (datetime.strptime(x, '%d%b%y') - today).days / 365 if x else None)
-
+    # Select the final columns
+    final_columns = ["instrument_name", "Option Type", 'mark_price', 'underlying_price', 'mark_iv', 'greeks.vega', 'Expiration Date', 'Strike Price', 'Time to Expiration']
+    coin_df = coin_df[final_columns]
     coin_df.to_csv('data/data.csv', index=False)
- 
     pbar.close()
-
     return coin_df
 
 data = get_option_data('BTC','month')
@@ -226,9 +217,8 @@ fig.update_layout(
         yaxis_title='Time to Expiry (Years)',
         zaxis_title='Implied Volatility %',
         xaxis=dict(type="log"),
-        aspectmode="cube"  # Ensures equal aspect ratio for x, y, and z
+        aspectmode="cube"  
     )
 )
 
 fig.show()
-
