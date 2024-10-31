@@ -11,12 +11,9 @@ import numpy as np
 from scipy.stats import norm
 import plotly.graph_objects as go
 from scipy.interpolate import griddata
-from tqdm import tqdm
 import concurrent.futures
 
-# Define interest rate and functions
-interest_rate = 0.05
-
+# Define functions
 def black_scholes_price(S, K, T, r, sigma, option_type="call"):
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
@@ -90,9 +87,17 @@ def get_option_data(coin, settlement_per):
 
 # Streamlit Interface
 st.title("Implied Volatility Surface for Crypto Options")
+
+# Sidebar inputs
 st.sidebar.header("Settings")
 coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
-settlement_per = st.sidebar.selectbox("Choose Settlement Period:", ['month', 'week'])
+settlement_per = st.sidebar.selectbox("Choose Settlement Period:", ['month', 'week', 'day'])
+interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.73, 1.20))
+
+# Display chosen settings under the title
+st.subheader(f"Coin: {coin}\n Settlement Period: {settlement_per.capitalize()}")
+
 st.write("Fetching data...")
 
 # Data Fetching and Processing
@@ -104,6 +109,11 @@ else:
     data = data[["instrument_name", "Option Type", 'mark_price', 'underlying_price', 'mark_iv', 'greeks.vega', 'Expiration Date', 'Strike Price', 'Time to Expiration']]
     data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
     btc_data = data.dropna()
+
+    # Apply strike price filter based on user input
+    min_strike, max_strike = strike_range
+    btc_data = btc_data[(btc_data['Strike Price'] >= btc_data['underlying_price'] * min_strike) &
+                        (btc_data['Strike Price'] <= btc_data['underlying_price'] * max_strike)]
 
     results = []
     for index, row in btc_data.iterrows():
@@ -130,7 +140,7 @@ else:
     )])
 
     fig.update_layout(
-        title='Implied Volatility Surface (BSM Approach)',
+        title='Implied Volatility Surface (Vega-Based Iterative Approach)',
         autosize=False,
         width=700,
         height=700,
