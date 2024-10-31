@@ -195,15 +195,20 @@ strikes = btc_data['Strike Price'].values
 times_to_expiration = btc_data['Time to Expiration'].values
 implied_vols = btc_data['Vega_implied_volatility'].values
 
-# Create meshgrid for strikes and times_to_expiration
-X, Y = np.meshgrid(np.unique(strikes), np.unique(times_to_expiration))
+# Define a finer grid resolution for strikes and times_to_expiration
+num_points = 100  # Adjust for higher or lower resolution; higher values = more detail
+fine_strikes = np.linspace(strikes.min(), strikes.max(), num_points)
+fine_times_to_expiration = np.linspace(times_to_expiration.min(), times_to_expiration.max(), num_points)
 
-# Interpolate the implied volatilities to fill the grid
-Z = griddata((strikes, times_to_expiration), implied_vols, (X, Y), method='linear')
+# Create a meshgrid for the finer grid
+X_fine, Y_fine = np.meshgrid(fine_strikes, fine_times_to_expiration)
+
+# Interpolate the implied volatilities to fill the finer grid
+Z_fine = griddata((strikes, times_to_expiration), implied_vols, (X_fine, Y_fine), method='linear')
 
 # Create the interactive 3D surface plot with color scale title
 fig = go.Figure(data=[go.Surface(
-    z=Z, x=X, y=Y, colorscale='RdYlGn_r',
+    z=Z_fine, x=X_fine, y=Y_fine, colorscale='RdYlGn_r',
     colorbar=dict(title="I.V. %")  # Title for the color scale
 )])
 
@@ -217,7 +222,7 @@ fig.update_layout(
         yaxis_title='Time to Expiry (Years)',
         zaxis_title='Implied Volatility %',
         xaxis=dict(type="log"),
-        aspectmode="cube"  
+        aspectmode="cube"  # Ensures equal aspect ratio for x, y, and z
     )
 )
 
