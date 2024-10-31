@@ -39,16 +39,29 @@ def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call"
             return sigma
     return None
 
+# API key
+API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxx'
+# Define headers for authenticated requests
+headers = {
+    'Authorization': f'Bearer {API_KEY}',
+    'Content-Type': 'application/json'
+}
+# Functions
 def get_option_name_and_settlement(coin):
-    r = requests.get(f"https://test.deribit.com/api/v2/public/get_instruments?currency={coin}&kind=option")
+    r = requests.get(f"https://test.deribit.com/api/v2/public/get_instruments?currency={coin}&kind=option", headers=headers)
     result = json.loads(r.text)
+    # Get option name
     name = pd.json_normalize(result['result'])['instrument_name']
+    name = list(name)
+    # Get option settlement period
     settlement_period = pd.json_normalize(result['result'])['settlement_period']
-    return list(name), list(settlement_period)
+    settlement_period = list(settlement_period)
+
+    return name, settlement_period 
 
 def fetch_option_data(option_name):
-    time.sleep(0.1)
-    r = requests.get(f'https://test.deribit.com/api/v2/public/get_order_book?instrument_name={option_name}')
+    time.sleep(0.1)  # Add a short delay to avoid hitting rate limits
+    r = requests.get(f'https://test.deribit.com/api/v2/public/get_order_book?instrument_name={option_name}', headers=headers)
     result = json.loads(r.text)
     return pd.json_normalize(result['result'])
 
@@ -86,17 +99,23 @@ def get_option_data(coin, settlement_per):
     return coin_df
 
 # Streamlit Interface
-st.title("Implied Volatility Surface for Crypto Options")
+st.title("Crypto Options: Implied Volatility Surface")
 
 # Sidebar inputs
 st.sidebar.header("Settings")
 coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
-settlement_per = st.sidebar.selectbox("Choose Settlement Period:", ['month', 'week', 'day'])
-interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.05, step=0.01)
+# Add a note about expected data retrieval times
+#st.sidebar.markdown("**Settlement Period:**")
+settlement_per = st.sidebar.selectbox(
+    "Choose Settlement Period:",
+    ['day','week','month'],
+    help="Approximate data retrieval times:\n- Month: 1.5 min\n- Week: 45 sec\n- Day: 15 sec"
+)
+interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.05, step=0.001)
 strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.73, 1.20))
 
 # Display chosen settings under the title
-st.subheader(f"Coin: {coin}\n Settlement Period: {settlement_per.capitalize()}")
+st.subheader(f"{coin}\n Settlement Period: {settlement_per.capitalize()}")
 
 st.write("Fetching data...")
 
