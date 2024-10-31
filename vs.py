@@ -227,7 +227,7 @@ fig = go.Figure(data=[go.Surface(
 )])
 
 fig.update_layout(
-    title='Implied Volatility Surface (BSM Approach)',
+    title='Implied Volatility Surface (Vega-Based Iterative Approach)',
     autosize=False,
     width=700,
     height=700,
