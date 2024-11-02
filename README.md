@@ -1,47 +1,60 @@
-# Optimizing Options Models for Cryptocurrency
+# Cryptocurrency Options Implied Volatility Surface Calculator
 
-Welcome to the Optimizing Options Models for Cryptocurrency repository. This project is focused on developing and refining mathematical models for pricing Bitcoin options in the over-the-counter (OTC) market.
+![Application Demo](.gif/ivf_defi.gif)
 
-## Introduction
+### Project Overview
 
-Options are financial derivatives that give the buyer the right, but not the obligation, to buy or sell an underlying asset at a predetermined price within a specified time period. The cryptocurrency market, while relatively new, presents unique opportunities for the application of options. This project aims to create accurate and reliable models that reflect the complexity and volatility of the cryptocurrency market.
+This repository contains an interactive Streamlit web application that calculates and visualizes implied volatility surfaces for cryptocurrency options. The application uses real-time on-chain data from Deribit for over 700 options and applies a Black-Scholes-based model to compute implied volatility with the Newton-Raphson method, leveraging Vega for iterative convergence. Users can adjust three parameters and view the implied volatility surface through a 3D Plotly plot.
 
-## Project Structure
+### Features
 
-- `data`: This directory contains datasets used in the project.
-- `Data-Preprocessing.ipynb`: A Jupyter notebook for preprocessing the data to be used in the models.
-- `EDA.ipynb`: An exploratory data analysis notebook to investigate the datasets and glean insights.
+- **Real-time Data**: Retrieves data for 700+ cryptocurrency options using the Deribit API.
+- **Advanced Volatility Calculations**: Implements a Black-Scholes model with Newton-Raphson and Vega for iterative convergence on highly volatile assets.
+- **Interactive 3D Visualization**: Provides a customizable 3D surface plot for implied volatility across multiple parameters.
 
+### Repository Structure
 
-## Steps to Achieve the Objective:
-
-1. **Background Research:** Conduct comprehensive research on traditional options pricing models and the peculiarities of the crypto market.
-2. **Data Collection:** Gather historical data on cryptocurrency prices, volatility, trading volumes, and information on existing crypto options traded in the OTC market.
-
-Here rn: 
-
-3. **Model Adaptation:** Begin with the Black-Scholes model as a baseline and modify it to account for high volatility and unique risk factors associated with cryptocurrencies.
-   
-      -stochastic volatility, where the volatility itself is treated as a random process.
-   
-       - Monte Carlo simulator
-5. **Incorporating Crypto-Specific Factors:** Include factors such as regulatory environment, technological changes, and market sentiment that significantly impact crypto markets.
-6. **Statistical Analysis and Model Testing:** Apply statistical methods to assess the accuracy and reliability of the adapted model through back-testing with historical data.
-7. **Optimization:** Refine the model based on testing results and employ advanced techniques like machine learning for dynamic adjustments.
-8. **Risk Management Integration:** Develop a framework for managing risks inherent in crypto options, such as counterparty risk, liquidity risk, and systemic risks.
-9. **Documentation and Reporting:** Document methodologies, assumptions, and findings. Prepare detailed reports and academic papers outlining the model's development and performance.
-10. **Compliance and Regulatory Review:** Ensure compliance with relevant financial regulations and standards, particularly those applicable to the crypto market.
-11. **Implementation and Real-Time Testing:** Implement the model in a real-world environment, monitor, and adjust it based on market feedback.
-12. **Continual Review and Update:** Regularly review the model to incorporate new market data and emerging trends in the crypto market.
+```plaintext
+.
+├── .devcontainer/                # Development container setup files
+├── data/                         # Contains data and plots generated in the notebooks
+├── 1. Data-Preprocessing.ipynb   # Preprocessing steps for data cleaning and preparation
+├── 2. (BTC) - Exploratory Data Analysis.ipynb  # EDA for Bitcoin options with Vega approach
+├── 2. (ETH) - Exploratory Data Analysis.ipynb  # EDA for Ethereum options with updated IV surface colors
+├── 3. implied_volatility_surface.ipynb # Notebook for calculating and visualizing implied volatility surface
+├── README.md                     # Project documentation (this file)
+├── requirements.txt              # Dependencies needed to run the application
+└── vs.py                         # Main Streamlit application file
 
 
-## Project Status
-Ongoing 
+### Setup Instructions
 
+1. **Clone the Repository**:
+   ```
+   git clone <repository-url>
+   cd <repository-name>
+   ```
 
-## Getting Started
+2. **Install Required Packages**:
+   Use the following command to install the necessary packages:
+   ```
+   pip install -r requirements.txt
+   ```
 
-To get started with this project, you can clone the repository to your local machine:
+3. **Run the Application**:
+   Start the Streamlit application using:
+   ```
+   streamlit run vs.py
+   ```
 
-```bash
-git clone https://github.com/ethanfalcao/Optimizing-Options-Models-Crypto.git
+### Notebooks
+
+- **1. Data-Preprocessing.ipynb**: Contains the data cleaning and preprocessing steps required for preparing the on-chain options data.
+- **2. (BTC) - Exploratory Data Analysis.ipynb**: Conducts exploratory data analysis for Bitcoin options, focusing on the Vega-based approach for implied volatility.
+- **2. (ETH) - Exploratory Data Analysis.ipynb**: Similar to the Bitcoin EDA, but focused on Ethereum options with customized colors (green and red) for the IV surface.
+- **3. implied_volatility_surface.ipynb**: This notebook calculates the implied volatility surface using a Black-Scholes-based model and visualizes it with Plotly.
+
+### Usage
+
+- **Calculation & Visualization**: After running the app, use the interactive interface to input parameters and generate the implied volatility surface.
+- **GIF Preview**: The application demonstration GIF is included above as a quick visual guide. Place the `test.gif` file in the repository root folder.
