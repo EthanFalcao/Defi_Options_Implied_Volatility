@@ -66,7 +66,7 @@ def extract_details(instrument_name, coin):
 
 def fetch_option_data(option_name, token):
     """Fetch the option data for a given option name with authentication."""
-    time.sleep(0.3)
+    time.sleep(0.5)
     headers = {"Authorization": f"Bearer {token}"}
     url = f'https://deribit.com/api/v2/public/get_order_book?instrument_name={option_name}'
     response = requests.get(url, headers=headers)
