@@ -178,11 +178,11 @@ def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call"
 
 # Data Fetching and Processing
 if settlement_per == "day":
-    st.write("eta: 15 sec")
+    st.write("ETA: 15 sec")
 elif settlement_per == "week":
-    st.write("eta: 45 sec")
+    st.write("ETA: 45 sec")
 else:
-    st.write("eta: 1.5 month")
+    st.write("ETA: 1.5 month")
     
     
 
