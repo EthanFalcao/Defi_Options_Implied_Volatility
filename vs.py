@@ -139,7 +139,7 @@ settlement_per = st.sidebar.selectbox(
     help="Approximate execution times:\n- Month: 1.5 min\n- Week: 45 sec\n- Day: 15 sec"
 )
 interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
-strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.73, 1.20))
+strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.50, 1.70))
 st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
 
 # Black-Scholes Model and Vega Functions
