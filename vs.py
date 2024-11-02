@@ -185,8 +185,6 @@ else:
     st.write("ETA: 1.5 min")
     
     
-
-st.write("Fetching data...")
 st.write("Fetching data...")
 data = get_option_data(coin, settlement_per)
 if data is None or data.empty:
