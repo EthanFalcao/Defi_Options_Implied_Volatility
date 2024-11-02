@@ -1,6 +1,7 @@
 # Cryptocurrency Options Implied Volatility Surface Calculator
 
-![Application Demo](.gif/ivf_defi.gif)
+![Application Demo](./gif/ivf_def.gif)
+
 
 ### Project Overview
 
