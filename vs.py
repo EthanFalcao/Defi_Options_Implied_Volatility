@@ -182,7 +182,7 @@ if settlement_per == "day":
 elif settlement_per == "week":
     st.write("ETA: 45 sec")
 else:
-    st.write("ETA: 1.5 month")
+    st.write("ETA: 1.5 min")
     
     
 
