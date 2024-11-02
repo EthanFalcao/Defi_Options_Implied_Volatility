@@ -19,24 +19,12 @@ This repository contains an interactive Streamlit web application that calculate
 ### Repository Structure
 
 ```plaintext
-.
-├── .devcontainer/                # Development container setup files
-├── data/                         # Contains data and plots generated in the notebooks
-├── 1. Data-Preprocessing.ipynb   # Preprocessing steps for data cleaning and preparation
-├── 2. (BTC) - Exploratory Data Analysis.ipynb  # EDA for Bitcoin options with Vega approach
-├── 2. (ETH) - Exploratory Data Analysis.ipynb  # EDA for Ethereum options with updated IV surface colors
-├── 3. implied_volatility_surface.ipynb # Notebook for calculating and visualizing implied volatility surface
-├── README.md                     # Project documentation (this file)
-├── requirements.txt              # Dependencies needed to run the application
-└── vs.py                         # Main Streamlit application file
-
-
-### Setup Instructions
 
 1. **Clone the Repository**:
-   ```
+   
    git clone <repository-url>
    cd <repository-name>
+```
    ```
 
 2. **Install Required Packages**:
