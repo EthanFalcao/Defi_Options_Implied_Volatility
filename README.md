@@ -1,9 +1,11 @@
 # Cryptocurrency Options Implied Volatility Surface Calculator
 
- ![ivf_defi](https://github.com/user-attachments/assets/a4dcedd7-4e71-412e-8008-28531b56b5c0)
-
+<div align="center">
+    <img src="https://github.com/user-attachments/assets/a4dcedd7-4e71-412e-8008-28531b5c6b90" alt="IVF Defi GIF">
+</div>
 
 ### Project Overview
+
 
 This repository contains an interactive Streamlit web application that calculates and visualizes implied volatility surfaces for cryptocurrency options. The application uses real-time on-chain data from Deribit for over 700 options and applies a Black-Scholes-based model to compute implied volatility with the Newton-Raphson method, leveraging Vega for iterative convergence. Users can adjust three parameters and view the implied volatility surface through a 3D Plotly plot.
 
