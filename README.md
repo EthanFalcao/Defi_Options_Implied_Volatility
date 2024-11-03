@@ -22,15 +22,6 @@ This repository contains an interactive Streamlit web application that calculate
 ### Repository Structure
 
 
-   ```
-
-2. **Install Required Packages**:
-   Use the following command to install the necessary packages:
-   ```
-   pip install -r requirements.txt
-   ```
-
-
 ### Notebooks
 
 - **1. Data-Preprocessing.ipynb**: Contains the data cleaning and preprocessing steps required for preparing the on-chain options data.
