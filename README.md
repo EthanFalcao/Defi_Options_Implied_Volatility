@@ -1,7 +1,7 @@
 # Cryptocurrency Options Implied Volatility Surface Calculator
 
 <div align="center">
-    <img src="https://github.com/user-attachments/assets/166a6c35-75fe-4d39-bc88-d089344aa1f7" alt="IVF Defi GIF">
+    <img src="https://github.com/user-attachments/assets/166a6c35-75fe-4d39-bc88-d089344aa1f7"  alt="IVF Defi GIF" width="600" height="400">
 </div>
 
 
