@@ -30,11 +30,6 @@ This repository contains an interactive Streamlit web application that calculate
    pip install -r requirements.txt
    ```
 
-3. **Run the Application**:
-   Start the Streamlit application using:
-   ```
-   streamlit run vs.py
-   ```
 
 ### Notebooks
 
