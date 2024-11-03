@@ -1,6 +1,7 @@
 # Cryptocurrency Options Implied Volatility Surface Calculator
 
-![](https://raw.githubusercontent.com/EthanFalcao/Defi_Options_Implied_Volatility/main/gif/ivf_defi.gif)
+ ![ivf_defi](https://github.com/user-attachments/assets/a4dcedd7-4e71-412e-8008-28531b56b5c0)
+
 
 ### Project Overview
 
