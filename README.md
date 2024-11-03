@@ -21,13 +21,7 @@ This repository contains an interactive Streamlit web application that calculate
 
 ### Repository Structure
 
-```plaintext
 
-1. **Clone the Repository**:
-   
-   git clone <repository-url>
-   cd <repository-name>
-```
    ```
 
 2. **Install Required Packages**:
@@ -52,4 +46,4 @@ This repository contains an interactive Streamlit web application that calculate
 ### Usage
 
 - **Calculation & Visualization**: After running the app, use the interactive interface to input parameters and generate the implied volatility surface.
-- **GIF Preview**: The application demonstration GIF is included above as a quick visual guide. Place the `test.gif` file in the repository root folder.
+
