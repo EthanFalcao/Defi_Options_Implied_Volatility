@@ -136,7 +136,7 @@ settlement_per = st.sidebar.selectbox(
     "Choose Settlement Period:",
     ['day','week', 'month', ],
     index=1, 
-    help="Approximate execution times:\n- Month: 30 sec\n- Week: 25 sec\n- Day: 15 sec"
+    help="Approximate execution times:\n- Month: 30 sec\n- Week: 25 sec\n- Day: 15 sec "
 )
 interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
 strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.50, 2.00))
