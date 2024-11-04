@@ -124,7 +124,7 @@ def get_option_data(coin, settlement_per):
     return coin_df
 
 
-# Define Streamlit UI components
+
 st.sidebar.header("Parameters")
 coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
 
@@ -136,18 +136,17 @@ settlement_per = st.sidebar.selectbox(
     "Choose Settlement Period:",
     ['day','week', 'month', ],
     index=1, 
-    help="Approximate execution times:\n- Month: 1.5 min\n- Week: 45 sec\n- Day: 15 sec"
+    help="Approximate execution times:\n- Month: 30 sec\n- Week: 25 sec\n- Day: 15 sec"
 )
 interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
 strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.50, 2.00))
 st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
 
 # Black-Scholes Model and Vega Functions
-   
 def black_scholes_price(S, K, T, r, sigma, option_type="call"):
     # Ensure T and sigma are non-negative
     if T <= 0 or sigma <= 0:
-        return 0  # Or return None, depending on how you want to handle it
+        return 0  
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
     if option_type == "call":
@@ -157,9 +156,8 @@ def black_scholes_price(S, K, T, r, sigma, option_type="call"):
     
     
 def vega(S, K, T, r, sigma):
-    # Ensure T and sigma are non-negative
     if T <= 0 or sigma <= 0:
-        return 0  # Or return None
+        return 0  
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     return S * norm.pdf(d1) * np.sqrt(T)
 
@@ -176,7 +174,6 @@ def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call"
             return sigma
     return None
 
-# Data Fetching and Processing
 if settlement_per == "day":
     st.write("EST: 15 sec")
 elif settlement_per == "week":
@@ -184,8 +181,7 @@ elif settlement_per == "week":
 else:
     st.write("EST: 30 sec")
     
-    
-# Fetch data and check if it's None or empty before proceeding
+
 st.write("Fetching data...")
 data = get_option_data(coin, settlement_per)
 
@@ -213,23 +209,21 @@ else:
         results.append(iv)
     btc_data['BSM_implied_volatility'] = results  # Store results in a new column
 
-    # Define the columns needed from your data
     strikes = btc_data['Strike Price'].values
     times_to_expiration = btc_data['Time to Expiration'].values
     implied_vols = btc_data['BSM_implied_volatility'].values
 
     # Define a finer grid resolution for strikes and times_to_expiration
-    num_points = 100  # Adjust for higher or lower resolution; higher values = more detail
+    num_points = 100  
     fine_strikes = np.linspace(strikes.min(), strikes.max(), num_points)
     fine_times_to_expiration = np.linspace(times_to_expiration.min(), times_to_expiration.max(), num_points)
-
-    # Create a meshgrid for the finer grid
+    # meshgrid for the finer grid
     X_fine, Y_fine = np.meshgrid(fine_strikes, fine_times_to_expiration)
 
     # Interpolate the implied volatilities to fill the finer grid
     Z_fine = griddata((strikes, times_to_expiration), implied_vols, (X_fine, Y_fine), method='linear')
 
-    # Create the interactive 3D surface plot with color scale title
+    # 3D surface plot with color scale title
     fig = go.Figure(data=[go.Surface(
         z=Z_fine, x=X_fine, y=Y_fine, colorscale='RdYlGn_r',
         colorbar=dict(title="I.V. %")  # Title for the color scale
@@ -245,11 +239,11 @@ else:
             yaxis_title='Time to Expiry (Years)',
             zaxis_title='Implied Volatility %',
             xaxis=dict(type="log"),
-            aspectmode="cube"  # Ensures equal aspect ratio for x, y, and z
+            aspectmode="cube" 
         )
     )
 
-    # Display the plot in Streamlit
+
     st.plotly_chart(fig)
 
 
