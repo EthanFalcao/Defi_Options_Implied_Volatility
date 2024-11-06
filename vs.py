@@ -176,7 +176,7 @@ interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_valu
 strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.50, 2.00))
 st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
 
-st.write("Fetching data...")
+
 
 
 if settlement_per == "day":
@@ -185,7 +185,9 @@ elif settlement_per == "week":
     st.write("EST: 25 sec")
 else:
     st.write("EST: 30 sec")
-    
+
+st.write("Fetching data...")
+
 data = get_option_data(coin, settlement_per)
     
     
@@ -260,7 +262,7 @@ else:
     
     # Generate the completion using the updated API format with ChatCompletion
     response = openai.ChatCompletion.create(
-        model="gpt-4-turbo",  # Ensure the model name is correct
+        model="gpt-4o-mini",  # Ensure the model name is correct
         messages=[
             {"role": "system", "content": "You are a helpful assistant and quantitative analyst."},
             {"role": "user", "content": prompt}
