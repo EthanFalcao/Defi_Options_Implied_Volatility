@@ -11,12 +11,18 @@ import plotly.graph_objects as go
 from scipy.interpolate import griddata
 import concurrent.futures
 from tqdm import tqdm
+import openai
+import os
 
+# Set your OpenAI API key
+os.environ["OPENAI_API_KEY"] = "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"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Set your client_id and client_secret
+# Set your Deribit API client_id and client_secret
 client_id = 'TsH-x5Hf'
 client_secret = 'YR_pRWYuCL91j6Yj9MQpzr8QSO_zO8ZoOrZ2CQjXF2A'
 
+# Authentication and data fetching functions
 def get_auth_token():
     """Authenticate to Deribit and return an access token."""
     url = "https://test.deribit.com/api/v2/public/auth"
@@ -123,28 +129,8 @@ def get_option_data(coin, settlement_per):
     
     return coin_df
 
-
-
-st.sidebar.header("Parameters")
-coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
-
-st.title(f"Defi Options - {coin}")
-st.title("Implied Volatility Surface")
-
-
-settlement_per = st.sidebar.selectbox(
-    "Choose Settlement Period:",
-    ['day','week', 'month', ],
-    index=1, 
-    help="Approximate execution times:\n- Month: 30 sec\n- Week: 25 sec\n- Day: 15 sec "
-)
-interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
-strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.50, 2.00))
-st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
-
 # Black-Scholes Model and Vega Functions
 def black_scholes_price(S, K, T, r, sigma, option_type="call"):
-    # Ensure T and sigma are non-negative
     if T <= 0 or sigma <= 0:
         return 0  
     d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
@@ -153,7 +139,6 @@ def black_scholes_price(S, K, T, r, sigma, option_type="call"):
         return S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
     else:
         return K * np.exp(-r * T) * norm.cdf(-d2) - S * norm.cdf(-d1)
-    
     
 def vega(S, K, T, r, sigma):
     if T <= 0 or sigma <= 0:
@@ -174,6 +159,26 @@ def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call"
             return sigma
     return None
 
+# Streamlit Sidebar and Parameters
+st.sidebar.header("Parameters")
+coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
+
+st.title(f"Defi Options - {coin}")
+st.title("Implied Volatility Surface")
+
+settlement_per = st.sidebar.selectbox(
+    "Choose Settlement Period:",
+    ['day', 'week', 'month'],
+    index=1,
+    help="Approximate execution times:\n- Month: 30 sec\n- Week: 25 sec\n- Day: 15 sec "
+)
+interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
+strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.50, 2.00))
+st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
+
+st.write("Fetching data...")
+
+
 if settlement_per == "day":
     st.write("EST: 15 sec")
 elif settlement_per == "week":
@@ -181,52 +186,44 @@ elif settlement_per == "week":
 else:
     st.write("EST: 30 sec")
     
-
-st.write("Fetching data...")
 data = get_option_data(coin, settlement_per)
+    
+    
+    
 
-# Check if data was fetched successfully
 if data is None or data.empty:
     st.write("No data available.")
 else:
     st.write("Data fetched successfully.")
-
-    # Ensure Strike Price is numeric only if data is not None
+    
     data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
-    btc_data = data.dropna()
+    data = data.dropna()
 
-    # Apply strike price filter based on user input
     min_strike, max_strike = strike_range
-    btc_data = btc_data[(btc_data['Strike Price'] >= btc_data['underlying_price'] * min_strike) & 
-                        (btc_data['Strike Price'] <= btc_data['underlying_price'] * max_strike)]
+    data = data[(data['Strike Price'] >= data['underlying_price'] * min_strike) & 
+                        (data['Strike Price'] <= data['underlying_price'] * max_strike)]
 
-    # Calculate implied volatility for each option
     results = []
-    for index, row in btc_data.iterrows():
+    for index, row in data.iterrows():
         S, K, T = row['underlying_price'], row['Strike Price'], row['Time to Expiration']
         market_price, initial_vol = row['mark_price'], row['mark_iv'] / 100
         iv = implied_volatility(market_price, S, K, T, interest_rate, initial_vol, option_type="call")
         results.append(iv)
-    btc_data['BSM_implied_volatility'] = results  # Store results in a new column
+    data['BSM_implied_volatility'] = results
 
-    strikes = btc_data['Strike Price'].values
-    times_to_expiration = btc_data['Time to Expiration'].values
-    implied_vols = btc_data['BSM_implied_volatility'].values
+    strikes = data['Strike Price'].values
+    times_to_expiration = data['Time to Expiration'].values
+    implied_vols = data['BSM_implied_volatility'].values
 
-    # Define a finer grid resolution for strikes and times_to_expiration
     num_points = 100  
     fine_strikes = np.linspace(strikes.min(), strikes.max(), num_points)
     fine_times_to_expiration = np.linspace(times_to_expiration.min(), times_to_expiration.max(), num_points)
-    # meshgrid for the finer grid
     X_fine, Y_fine = np.meshgrid(fine_strikes, fine_times_to_expiration)
-
-    # Interpolate the implied volatilities to fill the finer grid
     Z_fine = griddata((strikes, times_to_expiration), implied_vols, (X_fine, Y_fine), method='linear')
 
-    # 3D surface plot with color scale title
     fig = go.Figure(data=[go.Surface(
         z=Z_fine, x=X_fine, y=Y_fine, colorscale='RdYlGn_r',
-        colorbar=dict(title="I.V. %")  # Title for the color scale
+        colorbar=dict(title="I.V. %")
     )])
 
     fig.update_layout(
@@ -243,9 +240,45 @@ else:
         )
     )
 
-
     st.plotly_chart(fig)
+    
+    
+    
+    
+    # Define a prompt to request insights based on the data summaries
+    prompt = f"""
+    You are a quantitative analyst. Please analyze the following options data, which will be used to generate an implied volatility surface plot for options. Based on this analysis, be very short, concise, and provide specific trading strategies that could be effective.
+    Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, suggest any hedging or speculative approaches suitable for different market conditions.
+
+    {coin} Options Data with 'Strike Price','Time to Expiration','Vega_implied_volatility':
+    {data[['Strike Price', 'Time to Expiration', 'BSM_implied_volatility']].to_string(index=False)}
+
+    Only give top 3 strategies.
+    """
+
+
+    
+    # Generate the completion using the updated API format with ChatCompletion
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",  # Ensure the model name is correct
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant and quantitative analyst."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=200,  # Adjust token limit as needed
+        temperature=0.7
+    )
+
+    # Retrieve and print the response
+    strategies = response['choices'][0]['message']['content'].strip()
+    
+
+        
+        
+    with st.expander("Recommended Trading Strategies"):
+        st.markdown(f"### Top 3 Trading Strategies for {coin.upper()} Options")
+        st.write(strategies)
 
 
 st.write("---")
-st.markdown("Created by Ethan Falcao | [LinkedIn](https://www.linkedin.com/in/ethan-falcao//)")
+st.markdown("Created by Ethan Falcao | [LinkedIn](https://www.linkedin.com/in/ethan-falcao/)")
