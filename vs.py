@@ -229,7 +229,7 @@ else:
     )])
 
     fig.update_layout(
-        title='Implied Volatility Surface (Vega-Based Iterative Approach)',
+        title='Implied Volatility Surface',
         autosize=False,
         width=700,
         height=700,
