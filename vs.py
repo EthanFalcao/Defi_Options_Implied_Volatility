@@ -169,7 +169,7 @@ st.title("Implied Volatility Surface")
 settlement_per = st.sidebar.selectbox(
     "Choose Settlement Period:",
     [ 'week', 'month'],
-    index=1,
+    index=0,
     help="Approximate execution times:\n- Month: 30 sec\n- Week: 25 sec\n- Day: 15 sec "
 )
 interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
