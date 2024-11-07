@@ -255,7 +255,7 @@ else:
     {coin} Options Data with 'Strike Price','Time to Expiration','Vega_implied_volatility':
     {data[['Strike Price', 'Time to Expiration', 'BSM_implied_volatility']].to_string(index=False)}
 
-    Only give top 3 strategies.
+    Only give top 2 strategies.
     """
 
 
@@ -278,7 +278,7 @@ else:
         
         
     with st.expander("Recommended Trading Strategies"):
-        st.markdown(f"### Top 3 Trading Strategies for {coin.upper()} Options")
+        st.markdown(f"### Top 2 Trading Strategies for {coin.upper()} Options")
         st.write(strategies)
 
 
