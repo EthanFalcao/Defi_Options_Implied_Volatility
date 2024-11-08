@@ -253,7 +253,7 @@ else:
     Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, suggest any hedging or speculative approaches suitable for different market conditions.
 
     {coin} Options Data with 'Strike Price','Time to Expiration','Vega_implied_volatility':
-    {data[['Strike Price', 'Time to Expiration', 'BSM_implied_volatility']].to_string(index=False)}
+    {data[['Strike Price', 'Time to Expiration', 'BSM_implied_volatility','Option Type']].to_string(index=False)}
 
     Only give top 2 strategies.
     """
