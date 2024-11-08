@@ -255,7 +255,7 @@ else:
     {coin} Options Data with 'Strike Price','Time to Expiration','Vega_implied_volatility':
     {data[['Strike Price', 'Time to Expiration', 'BSM_implied_volatility','Option Type']].to_string(index=False)}
 
-    Only give top 2 strategies.
+    Only give top 2 strategies, and make sure the who output is max 200 tokens
     """
 
 
