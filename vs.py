@@ -278,7 +278,7 @@ else:
         
         
     with st.expander("Recommended Trading Strategies"):
-        st.markdown(f"### Top 2 Trading Strategies for {coin.upper()} Options")
+        st.markdown(f"### Top Trading Strategies for {coin.upper()} Options")
         st.write(strategies)
 
 
