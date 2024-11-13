@@ -14,13 +14,18 @@ from tqdm import tqdm
 import openai
 import os
 
-# Set your OpenAI API key#
-#os.environ["OPENAI_API_KEY"] = os.getenv("MY_API_KEY")
+ # Set your OpenAI API key#
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+
 # Set your Deribit API client_id and client_secret
-client_id = 'B2OvIrsH'
-client_secret = os.getenv("deribit_API_KEY")
+
+# Set your Deribit API client_id and client_secret
+client_id = 'TsH-x5Hf'
+client_secret = 'YR_pRWYuCL91j6Yj9MQpzr8QSO_zO8ZoOrZ2CQjXF2A'
+#client_secret = os.getenv("DERIBIT_API_SECRET")
+
+
 
 # Authentication and data fetching functions
 def get_auth_token():
