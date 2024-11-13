@@ -18,6 +18,7 @@ This repository contains an interactive Streamlit web application that calculate
 - **Real-time Data**: Retrieves data for 700+ cryptocurrency options using the Deribit API.
 - **Advanced Volatility Calculations**: Implements a Black-Scholes model with Newton-Raphson and Vega for iterative convergence on highly volatile assets.
 - **Interactive 3D Visualization**: Provides a customizable 3D surface plot for implied volatility across multiple parameters.
+- **Trading Strategies for BTC Option**: Trading Strategies Generated from Real-Time Data using OpenAI's GPT-4 Mini Model
 
 ### Repository Structure
 
@@ -26,8 +27,8 @@ This repository contains an interactive Streamlit web application that calculate
 
 - **1. Data-Preprocessing.ipynb**: Contains the data cleaning and preprocessing steps required for preparing the on-chain options data.
 - **2. (BTC) - Exploratory Data Analysis.ipynb**: Conducts exploratory data analysis for Bitcoin options, focusing on the Vega-based approach for implied volatility.
-- **2. (ETH) - Exploratory Data Analysis.ipynb**: Similar to the Bitcoin EDA, but focused on Ethereum options with customized colors (green and red) for the IV surface.
 - **3. implied_volatility_surface.ipynb**: This notebook calculates the implied volatility surface using a Black-Scholes-based model and visualizes it with Plotly.
+- **4. vs.py**: Queries data, calculates implied volatility, and visualizes the volatility surface, hosting the results interactively on Streamlit.
 
 ### Usage
 
