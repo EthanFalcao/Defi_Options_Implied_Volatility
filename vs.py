@@ -14,13 +14,11 @@ from tqdm import tqdm
 import openai
 import os
 
- # Set your OpenAI API key#
+
+#OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
-# Set your Deribit API client_id and client_secret
-
-# Set your Deribit API client_id and client_secret
+#Deribit API 
 client_id = 'TsH-x5Hf'
 client_secret = 'YR_pRWYuCL91j6Yj9MQpzr8QSO_zO8ZoOrZ2CQjXF2A'
 #client_secret = os.getenv("DERIBIT_API_SECRET")
@@ -253,7 +251,7 @@ else:
     
     
     
-    # Define a prompt to request insights based on the data summaries
+    # gbt prompt 
     prompt = f"""
     You are a quantitative analyst. Please analyze the following options data, which will be used to generate an implied volatility surface plot for options, given the settlement period of {settlement_per} Based on this analysis, be very short, concise, and provide specific trading strategies that could be effective.
     Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, suggest any hedging or speculative approaches suitable for different market conditions.
@@ -266,14 +264,13 @@ else:
 
 
     
-    # Generate the completion using the updated API format with ChatCompletion
     response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",  # Ensure the model name is correct
+        model="gpt-4o-mini",  
         messages=[
             {"role": "system", "content": "You are a helpful assistant and quantitative analyst."},
             {"role": "user", "content": prompt}
         ],
-        max_tokens=200,  # Adjust token limit as needed
+        max_tokens=200,  
         temperature=0.7
     )
 
