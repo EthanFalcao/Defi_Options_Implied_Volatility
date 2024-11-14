@@ -2,6 +2,9 @@
 
 This repository contains an interactive Streamlit web application that calculates and visualizes implied volatility surfaces for cryptocurrency options. The application uses real-time on-chain data from Deribit for over 700 options and applies a Black-Scholes-based model to compute implied volatility with the Newton-Raphson method, leveraging Vega for iterative convergence. Users can adjust three parameters and view the implied volatility surface through a 3D Plotly plot.
 
+![def](https://github.com/user-attachments/assets/0ab77740-7273-4d24-8353-cfef5ad692f1)
+
+
 ### Features
 
 - **Real-time Data**: Retrieves data for 700+ cryptocurrency options using the Deribit API.
