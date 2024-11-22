@@ -212,8 +212,6 @@ if not st.session_state["run_clicked"]:
     st.markdown("### Please fill out the parameters and click 'Run' to start.")
 else:
     # After "Run" is clicked
-    st.write("---")
-    st.markdown("### Data Fetching and Processing")
     data = st.session_state.get("data")   
 
     if data is None or data.empty:
