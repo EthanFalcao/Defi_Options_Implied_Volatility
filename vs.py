@@ -168,7 +168,7 @@ coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
 
 st.title(f"Defi Options - {coin}")
 st.title("Implied Volatility Surface", help="A volatility surface is a three-dimensional plot of IVs of various options listed on the same underlying. It can be used to visualize the volatility smile/skew and term structure. We use cryptocurrency option data from Deribit to construct volatility surfaces using The Black-Scholes Model.")
-
+st.write("---")
 
 settlement_per = st.sidebar.selectbox(
     "Choose Settlement Period:",
