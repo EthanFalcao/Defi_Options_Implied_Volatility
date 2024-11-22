@@ -209,14 +209,14 @@ if run_button:
 # Main UI Logic
 if not st.session_state["run_clicked"]:
     # Show this message before the "Run" button  
-    st.markdown("### Please fill out the parameters and click 'Run' to start.")
+    st.markdown("### Please fill out the parameters and click 'Run'")
 else:
     # After "Run" is clicked
     data = st.session_state.get("data")   
 
     if data is None or data.empty:
   
-        st.write("No data available. Adjust parameters and try again.")
+        st.write("No data available. Adjust parameters  and try again.")
     else:
         # Data successfully fetched 
         st.write("Data fetched successfully.")
