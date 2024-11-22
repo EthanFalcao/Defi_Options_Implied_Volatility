@@ -164,7 +164,9 @@ def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call"
 
 # Streamlit Sidebar and Parameters
 st.sidebar.header("Parameters")
-coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
+coin = st.sidebar.selectbox(
+    "Choose a coin:", ["BTC", "ETH", "MATIC", "SOL", "STETH", "USDC", "USDT", "USYC", "XRP"],
+    help="Due to API restrictions only BTC and ETH options are currently only available" )
 
 st.title(f"Defi Options - {coin}")
 st.title("Implied Volatility Surface", help="A volatility surface is a three-dimensional plot of IVs of various options listed on the same underlying. It can be used to visualize the volatility smile/skew and term structure. We use cryptocurrency option data from Deribit to construct volatility surfaces using The Black-Scholes Model.")
