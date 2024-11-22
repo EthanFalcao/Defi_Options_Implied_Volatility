@@ -179,10 +179,18 @@ settlement_per = st.sidebar.selectbox(
 interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
 strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.50, 2.00))
 
-# Add a button to trigger data fetching and analysis
-run_button = st.sidebar.button('Run')
+# Initialize session state to track if the "Run" button has been clicked
+if "run_clicked" not in st.session_state:
+    st.session_state["run_clicked"] = False
 
-if run_button:  # The code inside this block will only run if the button is clicked
+# Add the "Run" button in the sidebar
+run_button = st.sidebar.button("Run")
+
+# Check if the button is clicked
+if run_button:
+    st.session_state["run_clicked"] = True  # Set the state to True when the button is clicked
+    
+    # Your specified code block
     st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
 
     if settlement_per == "day":
@@ -193,13 +201,28 @@ if run_button:  # The code inside this block will only run if the button is clic
         st.write("EST: 30 sec")
 
     st.write("Fetching data...")
-
+    
+    # Fetch the data and store in session state
     data = get_option_data(coin, settlement_per)
+    st.session_state["data"] = data  # Store the fetched data in session state
+
+# Main UI Logic
+if not st.session_state["run_clicked"]:
+    # Show this message before the "Run" button is clicked
+    st.markdown("### Please fill out the parameters and click 'Run' to start.")
+else:
+    # After "Run" is clicked, proceed with data processing and visualization
+    st.write("---")
+    st.markdown("### Data Fetching and Processing")
+    data = st.session_state.get("data")  # Retrieve the data from session state
 
     if data is None or data.empty:
-        st.write("No data available.")
+        # Display if no data is available
+        st.write("No data available. Adjust parameters and try again.")
     else:
+        # Data successfully fetched, proceed with processing
         st.write("Data fetched successfully.")
+
 
         data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
         data = data.dropna()
@@ -247,7 +270,7 @@ if run_button:  # The code inside this block will only run if the button is clic
 
         st.plotly_chart(fig)
 
-        # GPT prompt logic remains the same...
+        # GPT prompt  
         prompt = f"""
         You are a quantitative analyst. Please analyze the following options data, which will be used to generate an implied volatility surface plot for options, given the settlement period of {settlement_per} Based on this analysis, be very short, concise, and provide specific trading strategies that could be effective.
         Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, suggest any hedging or speculative approaches suitable for different market conditions.
