@@ -167,122 +167,113 @@ st.sidebar.header("Parameters")
 coin = st.sidebar.selectbox("Choose a coin:", ['BTC', 'ETH'])
 
 st.title(f"Defi Options - {coin}")
-st.title("Implied Volatility Surface",help="A volatility surface is a three-dimensional plot of IVs of various options listed on the same underlying.  It can be used to visualize the volatility smile/skew and term structure. We use cryptocurrency option data from Deribit to construct volatility surfaces using The Black scholes Model. ")
+st.title("Implied Volatility Surface", help="A volatility surface is a three-dimensional plot of IVs of various options listed on the same underlying. It can be used to visualize the volatility smile/skew and term structure. We use cryptocurrency option data from Deribit to construct volatility surfaces using The Black-Scholes Model.")
 
 
 settlement_per = st.sidebar.selectbox(
     "Choose Settlement Period:",
-    [ 'week', 'month'],
+    ['week', 'month'],
     index=0,
-    help="Approximate execution times:\n- Month: 30 sec\n- Week: 25 sec "
+    help="Approximate execution times:\n- Month: 30 sec\n- Week: 25 sec"
 )
 interest_rate = st.sidebar.number_input("Interest Rate", min_value=0.0, max_value=1.0, value=0.015, step=0.001, format="%.3f")
 strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.0, (0.50, 2.00))
-st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
 
+# Add a button to trigger data fetching and analysis
+run_button = st.sidebar.button('Run')
 
+if run_button:  # The code inside this block will only run if the button is clicked
+    st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
 
+    if settlement_per == "day":
+        st.write("EST: 15 sec")
+    elif settlement_per == "week":
+        st.write("EST: 25 sec")
+    else:
+        st.write("EST: 30 sec")
 
-if settlement_per == "day":
-    st.write("EST: 15 sec")
-elif settlement_per == "week":
-    st.write("EST: 25 sec")
-else:
-    st.write("EST: 30 sec")
+    st.write("Fetching data...")
 
-st.write("Fetching data...")
+    data = get_option_data(coin, settlement_per)
 
-data = get_option_data(coin, settlement_per)
-    
-    
-    
+    if data is None or data.empty:
+        st.write("No data available.")
+    else:
+        st.write("Data fetched successfully.")
 
-if data is None or data.empty:
-    st.write("No data available.")
-else:
-    st.write("Data fetched successfully.")
-    
-    data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
-    data = data.dropna()
+        data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
+        data = data.dropna()
 
-    min_strike, max_strike = strike_range
-    data = data[(data['Strike Price'] >= data['underlying_price'] * min_strike) & 
-                        (data['Strike Price'] <= data['underlying_price'] * max_strike)]
+        min_strike, max_strike = strike_range
+        data = data[(data['Strike Price'] >= data['underlying_price'] * min_strike) & 
+                            (data['Strike Price'] <= data['underlying_price'] * max_strike)]
 
-    results = []
-    for index, row in data.iterrows():
-        S, K, T = row['underlying_price'], row['Strike Price'], row['Time to Expiration']
-        market_price, initial_vol = row['mark_price'], row['mark_iv'] / 100
-        iv = implied_volatility(market_price, S, K, T, interest_rate, initial_vol, option_type="call")
-        results.append(iv)
-    data['BSM_implied_volatility'] = results
+        results = []
+        for index, row in data.iterrows():
+            S, K, T = row['underlying_price'], row['Strike Price'], row['Time to Expiration']
+            market_price, initial_vol = row['mark_price'], row['mark_iv'] / 100
+            iv = implied_volatility(market_price, S, K, T, interest_rate, initial_vol, option_type="call")
+            results.append(iv)
+        data['BSM_implied_volatility'] = results
 
-    strikes = data['Strike Price'].values
-    times_to_expiration = data['Time to Expiration'].values
-    implied_vols = data['BSM_implied_volatility'].values
+        strikes = data['Strike Price'].values
+        times_to_expiration = data['Time to Expiration'].values
+        implied_vols = data['BSM_implied_volatility'].values
 
-    num_points = 100  
-    fine_strikes = np.linspace(strikes.min(), strikes.max(), num_points)
-    fine_times_to_expiration = np.linspace(times_to_expiration.min(), times_to_expiration.max(), num_points)
-    X_fine, Y_fine = np.meshgrid(fine_strikes, fine_times_to_expiration)
-    Z_fine = griddata((strikes, times_to_expiration), implied_vols, (X_fine, Y_fine), method='linear')
+        num_points = 100  
+        fine_strikes = np.linspace(strikes.min(), strikes.max(), num_points)
+        fine_times_to_expiration = np.linspace(times_to_expiration.min(), times_to_expiration.max(), num_points)
+        X_fine, Y_fine = np.meshgrid(fine_strikes, fine_times_to_expiration)
+        Z_fine = griddata((strikes, times_to_expiration), implied_vols, (X_fine, Y_fine), method='linear')
 
-    fig = go.Figure(data=[go.Surface(
-        z=Z_fine, x=X_fine, y=Y_fine, colorscale='RdYlGn_r',
-        colorbar=dict(title="I.V. %")
-    )])
+        fig = go.Figure(data=[go.Surface(
+            z=Z_fine, x=X_fine, y=Y_fine, colorscale='RdYlGn_r',
+            colorbar=dict(title="I.V. %")
+        )])
 
-    fig.update_layout(
-        title='Implied Volatility Surface',
-        autosize=False,
-        width=700,
-        height=700,
-        scene=dict(
-            xaxis_title='Strike Price',
-            yaxis_title='Time to Expiry (Years)',
-            zaxis_title='Implied Volatility %',
-            xaxis=dict(type="log"),
-            aspectmode="cube" 
+        fig.update_layout(
+            title='Implied Volatility Surface',
+            autosize=False,
+            width=700,
+            height=700,
+            scene=dict(
+                xaxis_title='Strike Price',
+                yaxis_title='Time to Expiry (Years)',
+                zaxis_title='Implied Volatility %',
+                xaxis=dict(type="log"),
+                aspectmode="cube" 
+            )
         )
-    )
 
-    st.plotly_chart(fig)
-    
-    
-    
-    
-    # gbt prompt 
-    prompt = f"""
-    You are a quantitative analyst. Please analyze the following options data, which will be used to generate an implied volatility surface plot for options, given the settlement period of {settlement_per} Based on this analysis, be very short, concise, and provide specific trading strategies that could be effective.
-    Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, suggest any hedging or speculative approaches suitable for different market conditions.
+        st.plotly_chart(fig)
 
-    {coin} Options Data with 'Strike Price','Time to Expiration','Vega_implied_volatility':
-    {data[['Strike Price', 'Time to Expiration', 'BSM_implied_volatility','Option Type']].to_string(index=False)}
+        # GPT prompt logic remains the same...
+        prompt = f"""
+        You are a quantitative analyst. Please analyze the following options data, which will be used to generate an implied volatility surface plot for options, given the settlement period of {settlement_per} Based on this analysis, be very short, concise, and provide specific trading strategies that could be effective.
+        Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, suggest any hedging or speculative approaches suitable for different market conditions.
 
-    Only give top 2 strategies, and make sure the who output is max 200 tokens
-    """
+        {coin} Options Data with 'Strike Price','Time to Expiration','Vega_implied_volatility':
+        {data[['Strike Price', 'Time to Expiration', 'BSM_implied_volatility','Option Type']].to_string(index=False)}
 
+        Only give top 2 strategies, and make sure the who output is max 200 tokens
+        """
 
-    
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",  
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant and quantitative analyst."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=200,  
-        temperature=0.7
-    )
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant and quantitative analyst."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=200,
+            temperature=0.7
+        )
 
-    # Retrieve and print the response
-    strategies = response['choices'][0]['message']['content'].strip()
-    
+        strategies = response['choices'][0]['message']['content'].strip()
 
-        
-        
-    with st.expander("Recommended Trading Strategies"):
-        st.markdown(f"### Trading Strategies for {coin.upper()} Options")
-        st.write(strategies)
+        with st.expander("Recommended Trading Strategies"):
+            st.markdown(f"### Trading Strategies for {coin.upper()} Options")
+            st.write(strategies)
+
 
 
 st.write("---")
