@@ -183,12 +183,12 @@ strike_range = st.sidebar.slider("Strike Price Range (% of Spot Price)", 0.5, 2.
 if "run_clicked" not in st.session_state:
     st.session_state["run_clicked"] = False
 
-# Add the "Run" button in the sidebar
+ 
 run_button = st.sidebar.button("Run")
 
 # Check if the button is clicked
 if run_button:
-    st.session_state["run_clicked"] = True  # Set the state to True when the button is clicked
+    st.session_state["run_clicked"] = True  
     
     # Your specified code block
     st.subheader(f"Settlement Period: {settlement_per.capitalize()}")
@@ -202,25 +202,25 @@ if run_button:
 
     st.write("Fetching data...")
     
-    # Fetch the data and store in session state
+ 
     data = get_option_data(coin, settlement_per)
-    st.session_state["data"] = data  # Store the fetched data in session state
+    st.session_state["data"] = data   
 
 # Main UI Logic
 if not st.session_state["run_clicked"]:
-    # Show this message before the "Run" button is clicked
+    # Show this message before the "Run" button  
     st.markdown("### Please fill out the parameters and click 'Run' to start.")
 else:
-    # After "Run" is clicked, proceed with data processing and visualization
+    # After "Run" is clicked
     st.write("---")
     st.markdown("### Data Fetching and Processing")
-    data = st.session_state.get("data")  # Retrieve the data from session state
+    data = st.session_state.get("data")   
 
     if data is None or data.empty:
-        # Display if no data is available
+  
         st.write("No data available. Adjust parameters and try again.")
     else:
-        # Data successfully fetched, proceed with processing
+        # Data successfully fetched 
         st.write("Data fetched successfully.")
 
 
