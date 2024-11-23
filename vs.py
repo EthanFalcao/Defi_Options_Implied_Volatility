@@ -217,19 +217,17 @@ else:
     data = st.session_state.get("data")   
 
     if data is None or data.empty:
-  
-        st.write("No data available. Adjust parameters  and try again.")
+        st.write("No data available. Adjust parameters and try again.")
     else:
         # Data successfully fetched 
         st.write("Data fetched successfully.")
-
 
         data['Strike Price'] = pd.to_numeric(data['Strike Price'], errors='coerce').astype('float64')
         data = data.dropna()
 
         min_strike, max_strike = strike_range
         data = data[(data['Strike Price'] >= data['underlying_price'] * min_strike) & 
-                            (data['Strike Price'] <= data['underlying_price'] * max_strike)]
+                    (data['Strike Price'] <= data['underlying_price'] * max_strike)]
 
         results = []
         for index, row in data.iterrows():
@@ -248,27 +246,6 @@ else:
         fine_times_to_expiration = np.linspace(times_to_expiration.min(), times_to_expiration.max(), num_points)
         X_fine, Y_fine = np.meshgrid(fine_strikes, fine_times_to_expiration)
         Z_fine = griddata((strikes, times_to_expiration), implied_vols, (X_fine, Y_fine), method='linear')
-
-        fig = go.Figure(data=[go.Surface(
-            z=Z_fine, x=X_fine, y=Y_fine, colorscale='RdYlGn_r',
-            colorbar=dict(title="I.V. %")
-        )])
-
-        fig.update_layout(
-            title='Implied Volatility Surface',
-            autosize=False,
-            width=700,
-            height=700,
-            scene=dict(
-                xaxis_title='Strike Price',
-                yaxis_title='Time to Expiry (Years)',
-                zaxis_title='Implied Volatility %',
-                xaxis=dict(type="log"),
-                aspectmode="cube" 
-            )
-        )
-
-        st.plotly_chart(fig)
 
         # GPT prompt  
         prompt = f"""
@@ -293,9 +270,32 @@ else:
 
         strategies = response['choices'][0]['message']['content'].strip()
 
+        # Display the recommended trading strategies first
         with st.expander("Recommended Trading Strategies"):
             st.markdown(f"### Trading Strategies for {coin.upper()} Options")
             st.write(strategies)
+
+        # Generate the implied volatility surface plot
+        fig = go.Figure(data=[go.Surface(
+            z=Z_fine, x=X_fine, y=Y_fine, colorscale='RdYlGn_r',
+            colorbar=dict(title="I.V. %")
+        )])
+
+        fig.update_layout(
+            title='Implied Volatility Surface',
+            autosize=False,
+            width=700,
+            height=700,
+            scene=dict(
+                xaxis_title='Strike Price',
+                yaxis_title='Time to Expiry (Years)',
+                zaxis_title='Implied Volatility %',
+                xaxis=dict(type="log"),
+                aspectmode="cube" 
+            )
+        )
+
+        st.plotly_chart(fig)
 
 
 
