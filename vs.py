@@ -165,7 +165,7 @@ def implied_volatility(market_price, S, K, T, r, initial_vol, option_type="call"
 # Streamlit Sidebar and Parameters
 st.sidebar.header("Parameters")
 coin = st.sidebar.selectbox(
-    "Choose a coin:", ["BTC", "ETH", "usdc"],
+    "Choose a coin:", ["BTC", "ETH", "USDC"],
     help="Due to API restrictions only BTC and ETH options are currently only available" )
 
 st.title(f"Defi Options - {coin}")
