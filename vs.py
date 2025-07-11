@@ -249,7 +249,7 @@ else:
 
         # GPT prompt  
         prompt = f"""
-        You are a quantitative analyst. Please analyze the following options data, which will be used to generate an implied volatility surface plot for options, given the settlement period of {settlement_per} Based on this analysis, be very short, concise, and provide specific trading strategies that could be effective.
+        You are a quantitative analyst, that focuses on onchain and crypto data. Given the recent events in the crypto market, please analyze the following options data, which will be used to generate an implied volatility surface plot for options, given the settlement period of {settlement_per} Based on this analysis, be very short, concise, and provide specific trading strategies that could be effective.
         Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, suggest any hedging or speculative approaches suitable for different market conditions.
 
         {coin} Options Data with 'Strike Price','Time to Expiration','Vega_implied_volatility':
