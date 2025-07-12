@@ -250,7 +250,7 @@ else:
         # GPT prompt  
         prompt = f"""
         You are an experienced quantitative analyst at akuna's crypto trade desk, that focuses on onchain crypto data. Search about the recent crypto news/events, and analyze the following options data, which will be used to generate an implied volatility surface plot for options, given the settlement period of {settlement_per} Based on this analysis, be very short, concise, and provide specific trading strategies that could be effective.
-        Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, suggest any hedging or speculative approaches suitable for different market conditions.
+        Consider strategies that take advantage of volatility trends, expiration dates, and strike prices specific to the {coin} options market. Additionally, run no-arbitrage checks(eg. calender spread, butterfly arbitrage) and detect done violations. ALso suggest any hedging or speculative approaches suitable for different market conditions.
 
         {coin} Options Data with 'Strike Price','Time to Expiration','Vega_implied_volatility':
         {data[['Strike Price', 'Time to Expiration', 'BSM_implied_volatility','Option Type']].to_string(index=False)}
