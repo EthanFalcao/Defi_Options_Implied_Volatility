@@ -509,10 +509,11 @@ coin = st.sidebar.selectbox(
     help="Due to API restrictions only BTC and ETH options are currently available."
 )
 
-st.title(f"Defi Options - {coin}")
+#st.title(f"Defi Options - {coin}")
+st.title(f"{coin} Options Analytics —")
 
 st.title(
-    "Implied Volatility Surface",
+    "Implied Volatility Surface & BVIX Index",
     help=(
         "A volatility surface is a three-dimensional plot of implied volatilities "
         "for options listed on the same underlying."
