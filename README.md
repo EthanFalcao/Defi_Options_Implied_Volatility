@@ -1,7 +1,6 @@
 ### Project Overview
 
 Accessible here: 
-% [defivolatilitysurface.streamlit.app](https://defivolatilitysurface.streamlit.app/)
 
 https://btcvolsurface.streamlit.app/
 
